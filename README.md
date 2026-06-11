@@ -47,16 +47,14 @@ make up                 # uruchamia z secretami z Bitwarden (nie zapisuje do pli
 make bw-lock            # po zakończeniu pracy
 ```
 
-Dokumentacja: [`docs/bitwarden-secrets.md`](docs/bitwarden-secrets.md)
+Dokumentacja: [`docs/knowledge/Bitwarden-Secrets.md`](docs/knowledge/Bitwarden-Secrets.md)
 
 ## Dokumentacja
 
-- **Notatka techniczna** (komendy, checklist, ściągi): [`docs/notatka-techniczna.md`](docs/notatka-techniczna.md)
+- **Baza wiedzy** (komendy, checklist, ściągi): [`docs/knowledge/README.md`](docs/knowledge/README.md)
 - Zadania: [`sql/exercises.md`](sql/exercises.md)
 - Rozwiązania: [`sql/solutions/`](sql/solutions/) (nie zaglądaj przed próbą samodzielną)
 - Legacy PHP do refaktoryzacji: [`exercises/legacy-invoice-processor.php`](exercises/legacy-invoice-processor.php)
-- Ściąga migracyjna: [`docs/migration-cheatsheet.md`](docs/migration-cheatsheet.md)
-- PostgreSQL vs MS SQL: [`docs/pg-vs-mssql.md`](docs/pg-vs-mssql.md)
 
 ## Połączenia z GUI (opcjonalnie)
 
@@ -87,13 +85,15 @@ docker compose exec php php symfony/bin/console doctrine:query:sql "SELECT COUNT
 
 ## .NET (plan awaryjny)
 
-Szkielet referencyjny w [`dotnet-skeleton/`](dotnet-skeleton/) — minimalne Web API w C#.
-Wymaga .NET SDK 8:
+Szkielet referencyjny w [`dotnet-skeleton/`](dotnet-skeleton/) — MVC + EF Core na MS SQL.
+Wymaga .NET SDK 10:
 
 ```bash
 brew install --cask dotnet-sdk
 cd dotnet-skeleton && dotnet run
 ```
+
+Dokumentacja: [`docs/knowledge/DotNet.md`](docs/knowledge/DotNet.md)
 
 ## Na dzień spotkania
 
@@ -119,5 +119,7 @@ live-coding-hrk/
 ├── exercises/
 ├── scripts/
 ├── docs/
+│   ├── knowledge/        # baza wiedzy (tematy w osobnych plikach)
+│   └── styles/main.css
 └── Makefile
 ```

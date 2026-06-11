@@ -1,4 +1,6 @@
-.PHONY: up down build bootstrap init-mssql psql mssql laravel symfony logs status verify reset doctor \
+.PHONY: up down build bootstrap init-mssql psql mssql laravel symfony dotnet \
+        laravel-support symfony-support dotnet-support postgres-support mssql-support php-support docker-support \
+        logs status verify reset doctor clear-cache \
         bw-install bw-login bw-unlock bw-lock secrets-generate-defaults secrets-seed secrets-scan \
         secrets-sync secrets-export secrets-list secrets-repair-manifest secrets-setup
 
@@ -7,6 +9,11 @@ COMPOSE := ./scripts/compose.sh
 
 up:
 	$(RUN) $(COMPOSE) up -d
+	@echo ""
+	@echo "Kontenery działają. Serwery aplikacji NIE startują automatycznie:"
+	@echo "  make doctor    → pełna stabilizacja (zalecane)"
+	@echo "  make start     → Laravel :8000 + Symfony :8001 (w tle)"
+	@echo "  make dotnet    → .NET :5050 (w tle)"
 
 down:
 	$(COMPOSE) down
@@ -34,6 +41,33 @@ laravel:
 
 symfony:
 	./scripts/symfony-serve.sh
+
+dotnet:
+	./scripts/dotnet-serve.sh
+
+laravel-support:
+	./scripts/laravel-support.sh
+
+symfony-support:
+	./scripts/symfony-support.sh
+
+dotnet-support:
+	./scripts/dotnet-support.sh
+
+postgres-support:
+	./scripts/postgres-support.sh
+
+mssql-support:
+	./scripts/mssql-support.sh
+
+php-support:
+	./scripts/php-support.sh
+
+docker-support:
+	./scripts/docker-support.sh
+
+clear-cache:
+	./scripts/clear-caches.sh
 
 start:
 	./scripts/start-servers.sh

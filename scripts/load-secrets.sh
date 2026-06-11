@@ -17,6 +17,8 @@ load_defaults() {
     # shellcheck disable=SC1090
     source "$DEFAULTS"
     set +a
+    export APP_KEY="${APP_KEY:-${LARAVEL_APP_KEY:-}}"
+    export APP_SECRET="${APP_SECRET:-${SYMFONY_APP_SECRET:-}}"
     export DB_PASSWORD="${POSTGRES_PASSWORD}"
     echo "Secrety: defaults.env (fallback)" >&2
     return 0
@@ -63,6 +65,9 @@ load_from_bitwarden() {
 
 load_secrets() {
     load_runtime || load_from_bitwarden || load_defaults
+    # Upewnij się, że frameworki mają klucze nawet gdy źródło używa prefiksów LARAVEL_/SYMFONY_
+    export APP_KEY="${APP_KEY:-${LARAVEL_APP_KEY:-}}"
+    export APP_SECRET="${APP_SECRET:-${SYMFONY_APP_SECRET:-}}"
     save_runtime 2>/dev/null || true
 }
 

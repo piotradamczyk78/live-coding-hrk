@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nowa faktura{% endblock %}
+
+{% block stylesheets %}
+    {{ include('invoices/_styles.html.twig') }}
+{% endblock %}
+
+{% block body %}
+    <h1>Nowa faktura</h1>
+
+    <div class="form-card">
+        <form method="post" action="{{ path('invoices_create') }}">
+            {{ include('invoices/_form.html.twig', {
+                invoice: invoice,
+                customers: customers,
+                statuses: statuses,
+                errors: errors,
+                formData: formData|default({}),
+            }) }}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Zapisz</button>
+                <a href="{{ path('invoices_index') }}" class="btn btn-secondary">Anuluj</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,62 @@
+@model IReadOnlyList<Invoice>
+@{
+    ViewData["Title"] = "Faktury";
+}
+
+<div class="header">
+    <h1>Faktury</h1>
+    <a asp-action="Create" class="btn btn-primary">+ Nowa faktura</a>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+
+@if (!Model.Any())
+{
+    <p class="empty">Brak faktur w bazie danych.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Numer</th>
+                <th>Klient</th>
+                <th>Kwota</th>
+                <th>Status</th>
+                <th>Wystawiona</th>
+                <th>Termin płatności</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var invoice in Model)
+            {
+                <tr>
+                    <td>@invoice.Id</td>
+                    <td>@invoice.Number</td>
+                    <td>@(invoice.Customer?.Name ?? "—")</td>
+                    <td class="amount">@invoice.Amount.ToString("N2") PLN</td>
+                    <td>
+                        <span class="status status-@invoice.Status">@invoice.Status</span>
+                    </td>
+                    <td>@(invoice.IssuedAt?.ToString("yyyy-MM-dd") ?? "—")</td>
+                    <td>@(invoice.DueAt?.ToString("yyyy-MM-dd") ?? "—")</td>
+                    <td>
+                        <div class="actions">
+                            <a asp-action="Edit" asp-route-id="@invoice.Id" class="btn btn-secondary btn-sm">Edytuj</a>
+                            <form asp-action="Delete" asp-route-id="@invoice.Id" method="post"
+                                  onsubmit="return confirm('Czy na pewno usunąć fakturę @invoice.Number?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger btn-sm">Usuń</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

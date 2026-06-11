@@ -12,24 +12,17 @@ source "$ROOT/scripts/load-secrets.sh"
 RUNTIME_DIR="$ROOT/.secrets/runtime"
 mkdir -p "$RUNTIME_DIR"
 
-cat >"$RUNTIME_DIR/start-laravel.sh" <<EOF
+"$ROOT/scripts/laravel-env-patch.sh"
+
+cat >"$RUNTIME_DIR/start-laravel.sh" <<'EOF'
 #!/bin/sh
-export APP_KEY='${APP_KEY}'
-export DB_PASSWORD='${POSTGRES_PASSWORD}'
+# APP_KEY i DB_PASSWORD wstrzyknięte przez laravel-env-patch.sh
 export DB_CONNECTION=pgsql
 export DB_HOST=postgres
 export DB_PORT=5432
 export DB_DATABASE=hrk_demo
 export DB_USERNAME=dev
-# Laravel czyta .env nawet gdy APP_KEY jest w env — nadpisz runtime (plik gitignored)
-if [ -f /app/laravel/.env ]; then
-  sed -i.bak "s|^APP_KEY=.*|APP_KEY=${APP_KEY}|" /app/laravel/.env
-  sed -i.bak "s|^DB_PASSWORD=.*|DB_PASSWORD=${POSTGRES_PASSWORD}|" /app/laravel/.env
-  sed -i.bak 's|^SESSION_DRIVER=.*|SESSION_DRIVER=file|' /app/laravel/.env
-fi
 export SESSION_DRIVER=file
-rm -f /app/laravel/bootstrap/cache/config.php
-php /app/laravel/artisan config:clear >/dev/null 2>&1 || true
 exec php /app/laravel/artisan serve --host=0.0.0.0 --port=8000
 EOF
 

@@ -1,0 +1,21 @@
+@model InvoiceFormPageViewModel
+@{
+    ViewData["Title"] = "Edycja faktury";
+}
+
+<h1>Edycja faktury @Model.Form.Number</h1>
+
+<div class="form-card">
+    <form asp-action="Edit" asp-route-id="@Model.Form.Id" method="post">
+        @Html.AntiForgeryToken()
+        <partial name="_Form" model="Model" />
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Zapisz</button>
+            <a asp-action="Index" class="btn btn-secondary">Anuluj</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,54 @@
+<div class="form-group">
+    <label for="number">Numer faktury</label>
+    <input type="text" id="number" name="number"
+           value="{{ formData.number|default(invoice ? invoice.number : '') }}" required>
+    {% if errors.number is defined %}<div class="error">{{ errors.number }}</div>{% endif %}
+</div>
+
+<div class="form-group">
+    <label for="customer_id">Klient</label>
+    <select id="customer_id" name="customer_id" required>
+        <option value="">— wybierz —</option>
+        {% set selectedCustomer = formData.customer_id|default(invoice and invoice.customer ? invoice.customer.id : '') %}
+        {% for customer in customers %}
+            <option value="{{ customer.id }}" {{ selectedCustomer == customer.id ? 'selected' : '' }}>
+                {{ customer.name }}
+            </option>
+        {% endfor %}
+    </select>
+    {% if errors.customer_id is defined %}<div class="error">{{ errors.customer_id }}</div>{% endif %}
+</div>
+
+<div class="form-group">
+    <label for="amount">Kwota (PLN)</label>
+    <input type="number" id="amount" name="amount" step="0.01" min="0.01"
+           value="{{ formData.amount|default(invoice ? invoice.amount : '') }}" required>
+    {% if errors.amount is defined %}<div class="error">{{ errors.amount }}</div>{% endif %}
+</div>
+
+<div class="form-group">
+    <label for="status">Status</label>
+    {% set selectedStatus = formData.status|default(invoice ? invoice.status : 'draft') %}
+    <select id="status" name="status" required>
+        {% for status in statuses %}
+            <option value="{{ status }}" {{ selectedStatus == status ? 'selected' : '' }}>
+                {{ status }}
+            </option>
+        {% endfor %}
+    </select>
+    {% if errors.status is defined %}<div class="error">{{ errors.status }}</div>{% endif %}
+</div>
+
+<div class="form-group">
+    <label for="issued_at">Data wystawienia</label>
+    <input type="date" id="issued_at" name="issued_at"
+           value="{{ formData.issued_at|default(invoice and invoice.issuedAt ? invoice.issuedAt|date('Y-m-d') : '') }}">
+    {% if errors.issued_at is defined %}<div class="error">{{ errors.issued_at }}</div>{% endif %}
+</div>
+
+<div class="form-group">
+    <label for="due_at">Termin płatności</label>
+    <input type="date" id="due_at" name="due_at"
+           value="{{ formData.due_at|default(invoice and invoice.dueAt ? invoice.dueAt|date('Y-m-d') : '') }}">
+    {% if errors.due_at is defined %}<div class="error">{{ errors.due_at }}</div>{% endif %}
+</div>

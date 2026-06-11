@@ -28,4 +28,29 @@ class InvoiceRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findOneWithCustomer(int $id): ?Invoice
+    {
+        return $this->createQueryBuilder('i')
+            ->leftJoin('i.customer', 'c')
+            ->addSelect('c')
+            ->where('i.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function existsByNumber(string $number, ?int $ignoreId = null): bool
+    {
+        $qb = $this->createQueryBuilder('i')
+            ->select('COUNT(i.id)')
+            ->where('i.number = :number')
+            ->setParameter('number', $number);
+
+        if ($ignoreId !== null) {
+            $qb->andWhere('i.id != :id')->setParameter('id', $ignoreId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult() > 0;
+    }
 }

@@ -7,8 +7,22 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Invoice extends Model
 {
+    /**
+     * Summary of UPDATED_AT
+     * @var string|null
+     */
+    public const UPDATED_AT = null;
+
+    /**
+     * Summary of table
+     * @var string
+     */
     protected $table = 'invoices';
 
+    /**
+     * Summary of fillable
+     * @var array<string>
+     */
     protected $fillable = [
         'number',
         'customer_id',
@@ -18,6 +32,10 @@ class Invoice extends Model
         'due_at',
     ];
 
+    /**
+     * Summary of casts
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
@@ -28,6 +46,11 @@ class Invoice extends Model
         ];
     }
 
+    /**
+     * Summary of customer
+     * @return BelongsTo<Customer, Invoice>
+     */
+    
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);

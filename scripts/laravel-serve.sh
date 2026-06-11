@@ -7,29 +7,9 @@ cd "$ROOT"
 # shellcheck disable=SC1091
 source "$ROOT/scripts/load-secrets.sh"
 
-if [[ -z "${APP_KEY:-}" || "$APP_KEY" == *'{{bw:'* ]]; then
-    echo "Błąd: APP_KEY nie ustawiony. Uruchom: make bw-unlock && make doctor" >&2
-    exit 1
-fi
+"$ROOT/scripts/laravel-env-patch.sh"
 
 export DB_PASSWORD="${POSTGRES_PASSWORD}"
-
-docker exec hrk-php sh -c "
-    if [ -f /app/laravel/.env ]; then
-        sed -i.bak 's|^APP_KEY=.*|APP_KEY=${APP_KEY}|' /app/laravel/.env
-        sed -i.bak 's|^DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD}|' /app/laravel/.env
-    fi
-    rm -f /app/laravel/bootstrap/cache/config.php
-"
-docker exec hrk-php env \
-    APP_KEY="${APP_KEY}" \
-    DB_PASSWORD="${DB_PASSWORD}" \
-    DB_CONNECTION=pgsql \
-    DB_HOST=postgres \
-    DB_PORT=5432 \
-    DB_DATABASE=hrk_demo \
-    DB_USERNAME=dev \
-    php /app/laravel/artisan config:clear >/dev/null 2>&1 || true
 
 exec docker exec -it hrk-php env \
     APP_KEY="${APP_KEY}" \

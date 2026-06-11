@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
-# Pełna stabilizacja środowiska — kontenery, DB, serwery, smoke testy.
+# Pełna stabilizacja środowiska — Bitwarden, kontenery, cache, serwery, smoke testy.
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+
+log() { echo "==> $*"; }
+
+log "Faza Bitwarden (seed vault + etykiety w konfiguracji)..."
+"$ROOT/scripts/doctor-bitwarden.sh"
 
 # shellcheck disable=SC1091
 source "$ROOT/scripts/load-secrets.sh"
@@ -13,10 +18,8 @@ export MSSQL_SA_PASSWORD="${MSSQL_SA_PASSWORD:?}"
 export POSTGRES_PASSWORD="${POSTGRES_PASSWORD:?}"
 export DATABASE_URL="${DATABASE_URL:?postgresql://dev:${POSTGRES_PASSWORD}@postgres:5432/hrk_demo?serverVersion=16&charset=utf8}"
 
-log() { echo "==> $*"; }
-
-log "Uruchamianie kontenerów Docker..."
-"$ROOT/scripts/compose.sh" up -d
+log "Uruchamianie kontenerów Docker (runtime z Bitwarden)..."
+"$ROOT/scripts/bitwarden/secrets-wrap.sh" "$ROOT/scripts/compose.sh" up -d
 
 log "Oczekiwanie na PostgreSQL..."
 for i in $(seq 1 60); do
@@ -40,25 +43,26 @@ fi
 log "Inicjalizacja MS SQL..."
 "$ROOT/scripts/init-mssql.sh" || echo "UWAGA: MS SQL init nieudany — sprawdź: docker compose logs sqlserver"
 
-log "Czyszczenie cache Laravel..."
-"$ROOT/scripts/compose.sh" exec -T php sh -c "rm -f /app/laravel/bootstrap/cache/config.php; php /app/laravel/artisan config:clear 2>/dev/null || true"
+log "Czyszczenie cache (Laravel, Symfony, .NET)..."
+"$ROOT/scripts/clear-caches.sh"
 
 log "Weryfikacja podstawowa (verify.sh)..."
 "$ROOT/scripts/verify.sh"
 
-log "Uruchamianie serwerów dev w tle..."
+log "Uruchamianie serwerów dev w tle (Laravel + Symfony)..."
 pkill -f "artisan serve --host=0.0.0.0 --port=8000" 2>/dev/null || true
 pkill -f "php -S 0.0.0.0:8001" 2>/dev/null || true
 
-nohup "$ROOT/scripts/laravel-serve.sh" > /tmp/hrk-laravel.log 2>&1 &
-LARAVEL_PID=$!
-nohup "$ROOT/scripts/symfony-serve.sh" > /tmp/hrk-symfony.log 2>&1 &
-SYMFONY_PID=$!
+"$ROOT/scripts/start-servers.sh"
 
-sleep 3
+log "Uruchamianie .NET w tle..."
+"$ROOT/scripts/dotnet-serve.sh"
+
+sleep 4
 
 wait_http() {
     local url="$1" name="$2"
+    local code="000"
     for i in $(seq 1 30); do
         code=$(curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || echo "000")
         if [ "$code" = "200" ]; then
@@ -68,21 +72,19 @@ wait_http() {
         sleep 1
     done
     echo "FAIL $name ($url) — ostatni HTTP $code" >&2
-    echo "--- log Laravel ---" >&2; tail -20 /tmp/hrk-laravel.log >&2 || true
-    echo "--- log Symfony ---" >&2; tail -20 /tmp/hrk-symfony.log >&2 || true
+    [ -f /tmp/hrk-dotnet.log ] && echo "--- log .NET ---" >&2 && tail -20 /tmp/hrk-dotnet.log >&2 || true
     return 1
 }
 
 ERR=0
 wait_http "http://localhost:8080" "Adminer" || ERR=1
-wait_http "http://localhost:8000" "Laravel" || ERR=1
-wait_http "http://localhost:8001" "Symfony" || ERR=1
+wait_http "http://localhost:8000/invoices" "Laravel" || ERR=1
+wait_http "http://localhost:8001/invoices" "Symfony" || ERR=1
 
 if command -v dotnet >/dev/null 2>&1 && [ -f "$ROOT/dotnet-skeleton/hrk-demo.csproj" ]; then
-    log ".NET SDK dostępny — build szkieletu..."
-    (cd "$ROOT/dotnet-skeleton" && dotnet build -v q) && echo "OK  .NET build" || { echo "FAIL .NET build" >&2; ERR=1; }
+    wait_http "http://localhost:5050/invoices" ".NET" || ERR=1
 else
-    echo "SKIP .NET (brak SDK lokalnie — szkielet w dotnet-skeleton/)"
+    echo "SKIP .NET smoke test (brak SDK)"
 fi
 
 if [ "${RUN_PLAYWRIGHT:-0}" = "1" ] && [ -f "$ROOT/e2e/package.json" ]; then
@@ -93,8 +95,10 @@ fi
 if [ "$ERR" -eq 0 ]; then
     echo ""
     echo "Środowisko GOTOWE."
-    echo "  Laravel  → http://localhost:8000  (PID $LARAVEL_PID)"
-    echo "  Symfony  → http://localhost:8001  (PID $SYMFONY_PID)"
+    echo "  Secrety  → Bitwarden (pliki .env: etykiety {{bw:...}})"
+    echo "  Laravel  → http://localhost:8000/invoices"
+    echo "  Symfony  → http://localhost:8001/invoices"
+    echo "  .NET     → http://localhost:5050/invoices"
     echo "  Adminer  → http://localhost:8080"
     echo "  PostgreSQL :5432 | MS SQL :1433"
 else
