@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "placeholder_format": "{{bw:%s}}",
+  "secrets": {
+    "hrk-live-coding/docker/postgres-password": {
+      "bitwarden_item_id": "b7901058-ea83-49a3-9593-b466007f08e9",
+      "placeholder": "{{bw:hrk-live-coding/docker/postgres-password}}",
+      "source_file": "secrets-seed.sh",
+      "source_key": "seed",
+      "updated_at": "2026-06-11T07:53:28Z"
+    },
+    "hrk-live-coding/docker/mssql-sa-password": {
+      "bitwarden_item_id": "618f685c-dcae-4864-a00f-b466007f13ff",
+      "placeholder": "{{bw:hrk-live-coding/docker/mssql-sa-password}}",
+      "source_file": "secrets-seed.sh",
+      "source_key": "seed",
+      "updated_at": "2026-06-11T07:53:35Z"
+    },
+    "hrk-live-coding/db/postgres-password": {
+      "bitwarden_item_id": "08289613-6190-4625-8eaa-b466007f1eea",
+      "placeholder": "{{bw:hrk-live-coding/db/postgres-password}}",
+      "source_file": "secrets-seed.sh",
+      "source_key": "seed",
+      "updated_at": "2026-06-11T07:53:42Z"
+    },
+    "hrk-live-coding/laravel/app-key": {
+      "bitwarden_item_id": "bd7895a9-695d-4d42-a69f-b466007f2a17",
+      "placeholder": "{{bw:hrk-live-coding/laravel/app-key}}",
+      "source_file": "secrets-seed.sh",
+      "source_key": "seed",
+      "updated_at": "2026-06-11T07:53:48Z"
+    },
+    "hrk-live-coding/symfony/app-secret": {
+      "bitwarden_item_id": "21f43c00-c5fe-4882-b8f8-b466007f351e",
+      "placeholder": "{{bw:hrk-live-coding/symfony/app-secret}}",
+      "source_file": "secrets-seed.sh",
+      "source_key": "seed",
+      "updated_at": "2026-06-11T07:53:55Z"
+    }
+  }
+}

@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: hrk-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dev}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-hrk_demo}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/schema-postgresql.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d hrk_demo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  sqlserver:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: hrk-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./sql/schema-mssql.sql:/schema-mssql.sql:ro
+
+  php:
+    build:
+      context: ./docker/php
+    container_name: hrk-php
+    working_dir: /app
+    command: ["tail", "-f", "/dev/null"]
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Runtime z Bitwarden (secrets-wrap) — nadpisują placeholdery w plikach .env
+      DATABASE_URL: ${DATABASE_URL}
+      APP_KEY: ${APP_KEY:-}
+      APP_SECRET: ${APP_SECRET:-}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_DATABASE: hrk_demo
+      DB_USERNAME: dev
+
+  adminer:
+    image: adminer:4
+    container_name: hrk-adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  sqlserver_data:

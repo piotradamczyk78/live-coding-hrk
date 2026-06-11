@@ -1,0 +1,53 @@
+{
+  "label_prefix": "hrk-live-coding",
+  "folder_name": "hrk-live-coding",
+  "placeholder_format": "{{bw:%s}}",
+  "scan_paths": [
+    "docker-compose.yml",
+    "docker-compose.env.template",
+    "templates/laravel.env.template",
+    "templates/symfony.env.template",
+    "scripts/init-mssql.sh",
+    "scripts/verify.sh",
+    "Makefile"
+  ],
+  "exclude_patterns": [
+    "{{bw:",
+    "null",
+    "YOUR_",
+    "CHANGE_ME",
+    "example.com"
+  ],
+  "rules": [
+    {
+      "id": "env_assignment",
+      "label_template": "{prefix}/{file_stem}/{key_lower}",
+      "pattern": "(?m)^([A-Z][A-Z0-9_]*(?:PASSWORD|SECRET|KEY|TOKEN)[A-Z0-9_]*)=(.+)$"
+    },
+    {
+      "id": "yaml_password",
+      "label_template": "{prefix}/docker/{key_lower}",
+      "pattern": "(?m)^\\s*([A-Z][A-Z0-9_]*PASSWORD):\\s*[\"']?([^\"'\\s#]+)[\"']?\\s*$"
+    },
+    {
+      "id": "shell_default_password",
+      "label_template": "{prefix}/scripts/{key_lower}",
+      "pattern": "([A-Z][A-Z0-9_]*PASSWORD)\\}\\:-([^\"'\\s}]+)"
+    },
+    {
+      "id": "sqlcmd_password_flag",
+      "label_template": "{prefix}/db/mssql-sa-password",
+      "pattern": "-P\\s+['\"]([^'\"]+)['\"]"
+    },
+    {
+      "id": "connection_string_password",
+      "label_template": "{prefix}/db/postgres-password",
+      "pattern": "postgresql://[^:]+:([^@]+)@"
+    },
+    {
+      "id": "laravel_app_key",
+      "label_template": "{prefix}/laravel/app-key",
+      "pattern": "(?m)^APP_KEY=(base64:[A-Za-z0-9+/=]+)$"
+    }
+  ]
+}

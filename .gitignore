@@ -1,0 +1,13 @@
+/vendor/
+/node_modules/
+/.env.local
+/.env.*.local
+/laravel/vendor/
+/symfony/vendor/
+/symfony/.env.local
+/dotnet-skeleton/bin/
+/dotnet-skeleton/obj/
+/.secrets/.bw-session
+/.secrets/defaults.env
+*.log
+*.bak
