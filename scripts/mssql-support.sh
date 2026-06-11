@@ -43,18 +43,14 @@ support_menu_run "MS SQL" \
         "mssql_sqlcmd_it" \
     "Test połączenia (SELECT 1)" \
         "mssql_sqlcmd -Q 'SELECT 1 AS ok'" \
-    "Liczba faktur" \
-        "mssql_sqlcmd -Q 'SET NOCOUNT ON; SELECT COUNT(*) AS invoices FROM dbo.invoices;'" \
-    "TOP 10 faktur" \
-        "mssql_sqlcmd -Q 'SET NOCOUNT ON; SELECT TOP 10 id, number, amount, status FROM dbo.invoices ORDER BY id;'" \
+    "Wersja SQL Server" \
+        "mssql_sqlcmd -Q 'SELECT @@VERSION AS version;'" \
     "Lista tabel (INFORMATION_SCHEMA)" \
         "mssql_sqlcmd -Q \"SET NOCOUNT ON; SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' ORDER BY TABLE_NAME;\"" \
-    "Faktury nieopłacone (JOIN + SUM)" \
-        "mssql_sqlcmd -Q \"SET NOCOUNT ON; SELECT i.number, c.name, i.amount, ISNULL(SUM(p.amount),0) AS paid FROM dbo.invoices i JOIN dbo.customers c ON c.id = i.customer_id LEFT JOIN dbo.payments p ON p.invoice_id = i.id GROUP BY i.id, i.number, c.name, i.amount HAVING ISNULL(SUM(p.amount),0) < i.amount;\"" \
-    "Lista klientów" \
-        "mssql_sqlcmd -Q 'SET NOCOUNT ON; SELECT id, name, tax_id FROM dbo.customers ORDER BY id;'" \
+    "Liczba tabel w schemacie dbo" \
+        "mssql_sqlcmd -Q \"SET NOCOUNT ON; SELECT COUNT(*) AS tables FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo';\"" \
     "Transakcja testowa (BEGIN TRAN → ROLLBACK)" \
-        "mssql_sqlcmd -Q \"BEGIN TRAN; UPDATE dbo.invoices SET status = N'paid' WHERE id = 2; ROLLBACK TRAN; SELECT status FROM dbo.invoices WHERE id = 2;\"" \
+        "mssql_sqlcmd -Q 'BEGIN TRAN; SELECT 1 AS ok; ROLLBACK TRAN;'" \
     "Przeładuj schemat (init-mssql.sh)" \
         "./scripts/init-mssql.sh" \
     "Dane połączenia GUI (DBeaver / Azure Data Studio)" \

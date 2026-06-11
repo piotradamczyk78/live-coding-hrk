@@ -42,9 +42,5 @@ support_menu_run ".NET 10" \
         "lsof -i :5050 || echo 'Port 5050 wolny'" \
     "Zatrzymaj proces na porcie 5050" \
         "lsof -ti :5050 | xargs kill -9 2>/dev/null; echo 'Port 5050 zwolniony (lub był wolny)'" \
-    "Test web — lista faktur (HTTP)" \
-        "curl -s -o /dev/null -w 'GET /invoices → HTTP %{http_code}\n' http://localhost:5050/invoices" \
-    "Test API — nieopłacone faktury" \
-        "curl -s http://localhost:5050/api/invoices/unpaid | head -c 500; echo" \
-    "Test API — dodaj płatność (POST)" \
-        "curl -s -X POST http://localhost:5050/api/invoices/1/payments -H 'Content-Type: application/json' -d '{\"amount\": 7500, \"method\": \"transfer\"}' | head -c 500; echo"
+    "Test HTTP — strona główna (redirect)" \
+        "curl -s -o /dev/null -w 'GET / → HTTP %{http_code}\n' http://localhost:5050/"

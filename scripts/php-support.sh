@@ -29,7 +29,7 @@ support_menu_run "PHP 8.3" \
     "Rozszerzenia DB (pdo, pgsql, intl)" \
         "php_exec php -m | grep -E '^(pdo|pdo_pgsql|pgsql|intl|zip)$' || php_exec php -m | grep -E 'pdo|pgsql|intl'" \
     "Test połączenia PDO → PostgreSQL" \
-        "php_exec php -r \"\\\$p = new PDO('pgsql:host=postgres;port=5432;dbname=hrk_demo', 'dev', '${POSTGRES_PASSWORD}'); echo 'OK: ' . \\\$p->query('SELECT COUNT(*) FROM invoices')->fetchColumn() . ' faktur\n';\"" \
+        "php_exec php -r \"\\\$p = new PDO('pgsql:host=postgres;port=5432;dbname=hrk_demo', 'dev', '${POSTGRES_PASSWORD}'); echo 'OK: ' . \\\$p->query('SELECT version()')->fetchColumn() . \"\n\";\"" \
     "Laravel — wersja artisan" \
         "php_exec env APP_KEY='${APP_KEY}' DB_PASSWORD='${POSTGRES_PASSWORD}' php /app/laravel/artisan --version" \
     "Symfony — wersja console" \
