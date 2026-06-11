@@ -4,8 +4,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-SA_PASSWORD="${MSSQL_SA_PASSWORD:?Ustaw MSSQL_SA_PASSWORD — uruchom: make bw-unlock && make up}"
-NETWORK="$("$ROOT/scripts/compose.sh" ps -q sqlserver | xargs docker inspect --format '{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null | head -1)"
+# shellcheck disable=SC1091
+source "$ROOT/scripts/load-secrets.sh"
+
+SA_PASSWORD="${MSSQL_SA_PASSWORD:?Ustaw MSSQL_SA_PASSWORD}"
+NETWORK="$(docker inspect hrk-sqlserver --format '{{range $k, $v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null | head -1)"
 SQLCMD_IMAGE="mcr.microsoft.com/mssql-tools:latest"
 
 sqlcmd_exec() {

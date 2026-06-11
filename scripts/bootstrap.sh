@@ -11,11 +11,9 @@ echo "==> Synchronizacja .env z placeholderami..."
 "$ROOT/scripts/bitwarden/secrets-sync.sh" 2>/dev/null || true
 
 echo "==> Uruchamianie kontenerów..."
-if [ -f "$ROOT/.secrets/.bw-session" ] && command -v bw >/dev/null 2>&1; then
-    "$ROOT/scripts/bitwarden/secrets-wrap.sh" "$ROOT/scripts/compose.sh" up -d
-else
-    echo "UWAGA: Bitwarden niedostępny — uruchom: make secrets-setup && make up"
-fi
+# shellcheck disable=SC1091
+source "$ROOT/scripts/load-secrets.sh"
+"$ROOT/scripts/compose.sh" up -d
 
 echo "==> Oczekiwanie na PostgreSQL..."
 until docker compose exec -T postgres pg_isready -U dev -d hrk_demo >/dev/null 2>&1; do

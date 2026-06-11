@@ -4,26 +4,40 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-eval "$("$ROOT/scripts/bitwarden/secrets-export-env.sh")"
+# shellcheck disable=SC1091
+source "$ROOT/scripts/load-secrets.sh"
+
+if [[ -z "${APP_KEY:-}" || "$APP_KEY" == *'{{bw:'* ]]; then
+    echo "Błąd: APP_KEY nie ustawiony. Uruchom: make bw-unlock && make doctor" >&2
+    exit 1
+fi
 
 export DB_PASSWORD="${POSTGRES_PASSWORD}"
 
-if [[ -z "${APP_KEY:-}" || "$APP_KEY" == *'{{bw:'* ]]; then
-    echo "Błąd: APP_KEY nie został rozwinięty z Bitwarden." >&2
-    echo "Uruchom: make bw-unlock && make laravel" >&2
-    exit 1
-fi
+docker exec hrk-php sh -c "
+    if [ -f /app/laravel/.env ]; then
+        sed -i.bak 's|^APP_KEY=.*|APP_KEY=${APP_KEY}|' /app/laravel/.env
+        sed -i.bak 's|^DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD}|' /app/laravel/.env
+    fi
+    rm -f /app/laravel/bootstrap/cache/config.php
+"
+docker exec hrk-php env \
+    APP_KEY="${APP_KEY}" \
+    DB_PASSWORD="${DB_PASSWORD}" \
+    DB_CONNECTION=pgsql \
+    DB_HOST=postgres \
+    DB_PORT=5432 \
+    DB_DATABASE=hrk_demo \
+    DB_USERNAME=dev \
+    php /app/laravel/artisan config:clear >/dev/null 2>&1 || true
 
-if [[ "$APP_KEY" != base64:* ]]; then
-    echo "Błąd: APP_KEY musi zaczynać się od 'base64:' (wygeneruj: make secrets-generate-defaults)" >&2
-    exit 1
-fi
-
-# Wyczyść cache configu (mógł zostać po wcześniejszej próbie z placeholderem)
-"$ROOT/scripts/compose.sh" exec -T php php laravel/artisan config:clear >/dev/null 2>&1 || true
-
-"$ROOT/scripts/compose.sh" exec \
-    -e "APP_KEY=${APP_KEY}" \
-    -e "DB_PASSWORD=${DB_PASSWORD}" \
-    -e "DATABASE_URL=${DATABASE_URL}" \
-    php php laravel/artisan serve --host=0.0.0.0 --port=8000
+exec docker exec -it hrk-php env \
+    APP_KEY="${APP_KEY}" \
+    DB_PASSWORD="${DB_PASSWORD}" \
+    DB_CONNECTION=pgsql \
+    DB_HOST=postgres \
+    DB_PORT=5432 \
+    DB_DATABASE=hrk_demo \
+    DB_USERNAME=dev \
+    DATABASE_URL="${DATABASE_URL:-postgresql://dev:${DB_PASSWORD}@postgres:5432/hrk_demo?serverVersion=16&charset=utf8}" \
+    php /app/laravel/artisan serve --host=0.0.0.0 --port=8000

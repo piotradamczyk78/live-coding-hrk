@@ -9,5 +9,7 @@
 /dotnet-skeleton/obj/
 /.secrets/.bw-session
 /.secrets/defaults.env
+/.secrets/runtime.env
+/.secrets/runtime/
 *.log
 *.bak

@@ -4,8 +4,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-MSSQL_SA_PASSWORD="${MSSQL_SA_PASSWORD:?Ustaw MSSQL_SA_PASSWORD — uruchom: make verify (przez secrets-wrap)}"
-POSTGRES_PASSWORD="${POSTGRES_PASSWORD:?Ustaw POSTGRES_PASSWORD — uruchom: make verify (przez secrets-wrap)}"
+# shellcheck disable=SC1091
+source "$ROOT/scripts/load-secrets.sh"
+
+MSSQL_SA_PASSWORD="${MSSQL_SA_PASSWORD:?Ustaw MSSQL_SA_PASSWORD}"
+POSTGRES_PASSWORD="${POSTGRES_PASSWORD:?Ustaw POSTGRES_PASSWORD}"
 
 echo "=== Status kontenerów ==="
 "$ROOT/scripts/compose.sh" ps
@@ -23,7 +26,8 @@ docker run --rm --network "$NETWORK" mcr.microsoft.com/mssql-tools:latest \
 
 echo ""
 echo "=== Laravel — wersja ==="
-"$ROOT/scripts/compose.sh" exec -T php php laravel/artisan --version
+"$ROOT/scripts/compose.sh" exec -T php env APP_KEY="${APP_KEY}" DB_PASSWORD="${POSTGRES_PASSWORD}" \
+    php /app/laravel/artisan --version
 
 echo ""
 echo "=== Symfony — wersja ==="

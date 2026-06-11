@@ -1,4 +1,4 @@
-.PHONY: up down build bootstrap init-mssql psql mssql laravel symfony logs status verify reset \
+.PHONY: up down build bootstrap init-mssql psql mssql laravel symfony logs status verify reset doctor \
         bw-install bw-login bw-unlock bw-lock secrets-generate-defaults secrets-seed secrets-scan \
         secrets-sync secrets-export secrets-list secrets-repair-manifest secrets-setup
 
@@ -33,9 +33,19 @@ laravel:
 	./scripts/laravel-serve.sh
 
 symfony:
-	$(RUN) $(COMPOSE) exec \
-		-e APP_SECRET -e DATABASE_URL \
-		php php -S 0.0.0.0:8001 -t symfony/public
+	./scripts/symfony-serve.sh
+
+start:
+	./scripts/start-servers.sh
+
+doctor:
+	./scripts/doctor.sh
+
+check:
+	./scripts/status-check.sh
+
+sync-passwords:
+	./scripts/sync-db-passwords.sh
 
 logs:
 	$(COMPOSE) logs -f
